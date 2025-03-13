@@ -8,7 +8,7 @@ import {
   ClipboardList,
   Package,
   ShoppingCart,
-  Tool,
+  Wrench,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -112,7 +112,7 @@ const Dashboard: React.FC = () => {
                 <div className="metric-label">Produtos finalizados</div>
               </div>
               <div className="p-2 bg-indigo-100 rounded-full">
-                <Tool className="h-5 w-5 text-indigo-700" />
+                <Wrench className="h-5 w-5 text-indigo-700" />
               </div>
             </div>
             <div className="text-xs flex items-center text-success">

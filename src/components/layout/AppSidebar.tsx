@@ -20,7 +20,7 @@ import {
   ShoppingCart,
   Layers,
   Settings,
-  Tool,
+  Wrench,
   Users,
   FileText,
 } from "lucide-react";
@@ -34,7 +34,7 @@ const AppSidebar: React.FC = () => {
     <Sidebar>
       <SidebarHeader className="flex items-center justify-center py-4">
         <div className="flex items-center gap-2">
-          <Tool className="h-6 w-6 text-primary" />
+          <Wrench className="h-6 w-6 text-primary" />
           <h1 className="font-bold text-xl">ToolWise ERP</h1>
         </div>
       </SidebarHeader>
@@ -55,7 +55,7 @@ const AppSidebar: React.FC = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
+        
         <SidebarGroup>
           <SidebarGroupLabel>Produção</SidebarGroupLabel>
           <SidebarGroupContent>
