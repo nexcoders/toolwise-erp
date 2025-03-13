@@ -19,6 +19,9 @@ import Oportunidades from "./pages/crm/Oportunidades";
 import Empresas from "./pages/crm/Empresas";
 import Relatorios from "./pages/crm/Relatorios";
 
+// Change the window title
+document.title = "Nex G.E";
+
 const queryClient = new QueryClient();
 
 const App = () => (
