@@ -25,9 +25,8 @@ const AppHeader: React.FC = () => {
     <header className="border-b py-3 px-4 md:px-6 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="h-9 w-9 p-2 rounded-md hover:bg-secondary flex items-center justify-center">
-          {({ isOpen }) => (
-            isOpen ? <SidebarClose size={20} /> : <SidebarOpen size={20} />
-          )}
+          {/* The function pattern isn't directly supported as a ReactNode, 
+              so we need to use the render props from the sidebar trigger component directly */}
         </SidebarTrigger>
 
         <div className="relative max-w-sm hidden md:flex items-center">
