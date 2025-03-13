@@ -23,6 +23,10 @@ import {
   Wrench,
   Users,
   FileText,
+  UserPlus,
+  Building2,
+  BookOpen,
+  BarChart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +38,7 @@ const AppSidebar: React.FC = () => {
     <Sidebar>
       <SidebarHeader className="flex items-center justify-center py-4">
         <div className="flex items-center gap-2">
-          <Wrench className="h-6 w-6 text-primary" />
+          <Wrench className="h-6 w-6 text-brand-primary" />
           <h1 className="font-bold text-xl">ToolWise ERP</h1>
         </div>
       </SidebarHeader>
@@ -49,6 +53,46 @@ const AppSidebar: React.FC = () => {
                   <Link to="/">
                     <BarChart3 className="h-5 w-5 mr-2" />
                     <span>Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        
+        <SidebarGroup>
+          <SidebarGroupLabel>CRM</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/crm/clientes") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/crm/clientes">
+                    <Users className="h-5 w-5 mr-2" />
+                    <span>Clientes</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/crm/oportunidades") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/crm/oportunidades">
+                    <UserPlus className="h-5 w-5 mr-2" />
+                    <span>Oportunidades</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/crm/empresas") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/crm/empresas">
+                    <Building2 className="h-5 w-5 mr-2" />
+                    <span>Empresas</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/crm/relatorios") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/crm/relatorios">
+                    <BarChart className="h-5 w-5 mr-2" />
+                    <span>Relatórios</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

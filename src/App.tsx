@@ -14,6 +14,10 @@ import Movimentacoes from "./pages/estoque/Movimentacoes";
 import Cotacoes from "./pages/compras/Cotacoes";
 import Fornecedores from "./pages/compras/Fornecedores";
 import Configuracoes from "./pages/Configuracoes";
+import Clientes from "./pages/crm/Clientes";
+import Oportunidades from "./pages/crm/Oportunidades";
+import Empresas from "./pages/crm/Empresas";
+import Relatorios from "./pages/crm/Relatorios";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +36,10 @@ const App = () => (
             <Route path="/estoque/movimentacoes" element={<Movimentacoes />} />
             <Route path="/compras/cotacoes" element={<Cotacoes />} />
             <Route path="/compras/fornecedores" element={<Fornecedores />} />
+            <Route path="/crm/clientes" element={<Clientes />} />
+            <Route path="/crm/oportunidades" element={<Oportunidades />} />
+            <Route path="/crm/empresas" element={<Empresas />} />
+            <Route path="/crm/relatorios" element={<Relatorios />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
           </Route>
           <Route path="*" element={<NotFound />} />
