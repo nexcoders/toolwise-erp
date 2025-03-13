@@ -25,8 +25,9 @@ const AppHeader: React.FC = () => {
     <header className="border-b py-3 px-4 md:px-6 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="h-9 w-9 p-2 rounded-md hover:bg-secondary flex items-center justify-center">
-          {/* The function pattern isn't directly supported as a ReactNode, 
-              so we need to use the render props from the sidebar trigger component directly */}
+          {/* Renderizamos apenas o ícone, não uma função */}
+          <SidebarOpen className="h-5 w-5 block sidebar:hidden" />
+          <SidebarClose className="h-5 w-5 hidden sidebar:block" />
         </SidebarTrigger>
 
         <div className="relative max-w-sm hidden md:flex items-center">
