@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Card,
@@ -56,7 +55,6 @@ import {
   Send,
 } from "lucide-react";
 
-// Mock data
 const mockCotacoes = [
   {
     id: "COT-001",
@@ -185,16 +183,18 @@ const Cotacoes: React.FC = () => {
                 <Label htmlFor="item1" className="text-right col-span-3">
                   Item 1
                 </Label>
-                <Select className="col-span-5">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um insumo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="aco-carbono">Aço Carbono 1045</SelectItem>
-                    <SelectItem value="aco-inox">Aço Inox 304</SelectItem>
-                    <SelectItem value="parafuso">Parafuso M8x1.25</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="col-span-5">
+                  <Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um insumo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="aco-carbono">Aço Carbono 1045</SelectItem>
+                      <SelectItem value="aco-inox">Aço Inox 304</SelectItem>
+                      <SelectItem value="parafuso">Parafuso M8x1.25</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Input
                   type="number"
                   placeholder="Qtde"
