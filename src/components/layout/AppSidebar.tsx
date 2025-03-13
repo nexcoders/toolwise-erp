@@ -1,45 +1,16 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  SidebarHeader,
-} from "@/components/ui/sidebar";
-import {
-  BarChart3,
-  ClipboardList,
-  Package,
-  ShoppingCart,
-  Layers,
-  Settings,
-  Wrench,
-  Users,
-  FileText,
-  UserPlus,
-  Building2,
-  BookOpen,
-  BarChart,
-} from "lucide-react";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
+import { BarChart3, ClipboardList, Package, ShoppingCart, Layers, Settings, Wrench, Users, FileText, UserPlus, Building2, BookOpen, BarChart } from "lucide-react";
 import { cn } from "@/lib/utils";
-
 const AppSidebar: React.FC = () => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
-
-  return (
-    <Sidebar>
+  return <Sidebar>
       <SidebarHeader className="flex items-center justify-center py-4">
         <div className="flex items-center gap-2">
           <Wrench className="h-6 w-6 text-brand-primary" />
-          <h1 className="font-bold text-xl">ToolWise ERP</h1>
+          <h1 className="font-bold text-xl">Nex G.E</h1>
         </div>
       </SidebarHeader>
       
@@ -194,8 +165,6 @@ const AppSidebar: React.FC = () => {
           ToolWise ERP v1.0.0
         </div>
       </SidebarFooter>
-    </Sidebar>
-  );
+    </Sidebar>;
 };
-
 export default AppSidebar;
