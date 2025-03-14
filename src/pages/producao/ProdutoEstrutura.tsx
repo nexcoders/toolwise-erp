@@ -51,10 +51,10 @@ import {
   Plus,
   Search,
   Trash2,
-  X,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter } from "@/components/ui/sheet";
+import BOMTable from "@/components/producao/BOMTable";
+import ProductEditor from "@/components/producao/ProductEditor";
 
 // Mock data for products
 const mockProdutos = [
@@ -129,21 +129,22 @@ const ProdutoEstrutura: React.FC = () => {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("todos");
+  const [searchTerm, setSearchTerm] = useState("");
   
-  // States for edit mode
+  // Product editor state
   const [selectedProduto, setSelectedProduto] = useState<any>(null);
-  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [isProductEditorOpen, setIsProductEditorOpen] = useState(false);
   const [isViewingBOM, setIsViewingBOM] = useState(false);
   
-  // State for material dialog 
-  const [isMaterialDialogOpen, setIsMaterialDialogOpen] = useState(false);
-  const [materialToAdd, setMaterialToAdd] = useState<{id: string; quantidade: number}>({
+  // New product creation state
+  const [newProduct, setNewProduct] = useState({
     id: "",
-    quantidade: 1
+    nome: "",
+    categoria: "",
+    custoProducao: 0,
+    tempoProducao: 0,
+    materiais: [],
   });
-  
-  // State for product materials (editing)
-  const [editingMateriais, setEditingMateriais] = useState<any[]>([]);
   
   // Handler for viewing BOM - Fixed to properly stop event propagation
   const handleViewBOM = (produto: any, e?: React.MouseEvent) => {
@@ -151,9 +152,8 @@ const ProdutoEstrutura: React.FC = () => {
       e.stopPropagation();
     }
     setSelectedProduto({...produto});
-    setEditingMateriais([...produto.materiais]);
     setIsViewingBOM(true);
-    setIsEditSheetOpen(true);
+    setIsProductEditorOpen(true);
   };
   
   // Handler for editing product - Fixed to properly stop event propagation
@@ -162,9 +162,8 @@ const ProdutoEstrutura: React.FC = () => {
       e.stopPropagation();
     }
     setSelectedProduto({...produto});
-    setEditingMateriais([...produto.materiais]);
     setIsViewingBOM(false);
-    setIsEditSheetOpen(true);
+    setIsProductEditorOpen(true);
   };
   
   // Handler for deletion confirmation - Fixed to properly stop event propagation
@@ -179,75 +178,26 @@ const ProdutoEstrutura: React.FC = () => {
   };
   
   // Handler for saving product
-  const handleSaveProduct = () => {
+  const handleSaveProduct = (updatedProduct: any) => {
     toast({
       title: "Alterações salvas",
       description: "As alterações no produto foram salvas com sucesso.",
     });
-    setIsEditSheetOpen(false);
   };
   
-  // Handler for adding material to BOM
-  const handleAddMaterial = () => {
-    if (!materialToAdd.id || materialToAdd.quantidade <= 0) {
-      toast({
-        title: "Erro ao adicionar material",
-        description: "Selecione um material e informe uma quantidade válida.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const materialSelected = mockMateriais.find(m => m.id === materialToAdd.id);
-    if (!materialSelected) return;
-    
-    // Check if material already exists
-    const materialExists = editingMateriais.some(m => m.id === materialToAdd.id);
-    if (materialExists) {
-      toast({
-        title: "Material já adicionado",
-        description: "Este material já está na estrutura do produto.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const newMaterial = {
-      id: materialSelected.id,
-      nome: materialSelected.nome,
-      quantidade: materialToAdd.quantidade,
-      unidade: materialSelected.unidade,
-      custoUnitario: materialSelected.custo
-    };
-    
-    setEditingMateriais([...editingMateriais, newMaterial]);
-    setIsMaterialDialogOpen(false);
-    setMaterialToAdd({ id: "", quantidade: 1 });
-    
-    toast({
-      title: "Material adicionado",
-      description: `${materialSelected.nome} foi adicionado à estrutura do produto.`
-    });
-  };
-  
-  // Handler for removing material from BOM - Fixed to properly stop event propagation
-  const handleRemoveMaterial = (materialId: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.stopPropagation();
-    }
-    setEditingMateriais(editingMateriais.filter(m => m.id !== materialId));
-    
-    toast({
-      title: "Material removido",
-      description: "O material foi removido da estrutura do produto."
-    });
-  };
-
   const filteredProdutos = activeTab === "todos"
     ? mockProdutos
     : mockProdutos.filter(produto => 
         produto.categoria.toLowerCase() === activeTab
       );
+      
+  // Apply search filtering
+  const searchedProdutos = searchTerm
+    ? filteredProdutos.filter(produto =>
+        produto.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        produto.id.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : filteredProdutos;
 
   return (
     <div className="space-y-6">
@@ -260,7 +210,10 @@ const ProdutoEstrutura: React.FC = () => {
               <span>Novo Produto</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent 
+            className="sm:max-w-[600px]"
+            onClick={(e) => e.stopPropagation()} // Prevent event bubbling
+          >
             <DialogHeader>
               <DialogTitle>Criar Novo Produto</DialogTitle>
               <DialogDescription>
@@ -276,6 +229,8 @@ const ProdutoEstrutura: React.FC = () => {
                   id="codigo"
                   placeholder="Ex: PROD-006"
                   className="col-span-3"
+                  value={newProduct.id}
+                  onChange={(e) => setNewProduct({...newProduct, id: e.target.value})}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -286,13 +241,18 @@ const ProdutoEstrutura: React.FC = () => {
                   id="nome"
                   placeholder="Nome do produto"
                   className="col-span-3"
+                  value={newProduct.nome}
+                  onChange={(e) => setNewProduct({...newProduct, nome: e.target.value})}
                 />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="categoria" className="text-right">
                   Categoria
                 </Label>
-                <Select>
+                <Select
+                  value={newProduct.categoria}
+                  onValueChange={(value) => setNewProduct({...newProduct, categoria: value})}
+                >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
@@ -314,6 +274,8 @@ const ProdutoEstrutura: React.FC = () => {
                   type="number"
                   min="1"
                   className="col-span-3"
+                  value={newProduct.tempoProducao || ""}
+                  onChange={(e) => setNewProduct({...newProduct, tempoProducao: Number(e.target.value)})}
                 />
               </div>
               <div className="space-y-2">
@@ -326,32 +288,30 @@ const ProdutoEstrutura: React.FC = () => {
                       <span>Adicionar Material</span>
                     </Button>
                   </div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Insumo</TableHead>
-                        <TableHead>Quantidade</TableHead>
-                        <TableHead>Unidade</TableHead>
-                        <TableHead>Custo Unitário</TableHead>
-                        <TableHead className="text-right">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
-                          Nenhum material adicionado.
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
+                  <BOMTable materials={[]} readOnly={false} />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <Button 
+                variant="outline" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsDialogOpen(false);
+                }}>
                 Cancelar
               </Button>
-              <Button onClick={() => setIsDialogOpen(false)}>Salvar</Button>
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toast({
+                    title: "Produto criado",
+                    description: "O novo produto foi criado com sucesso.",
+                  });
+                  setIsDialogOpen(false);
+                }}>
+                Salvar
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -372,6 +332,8 @@ const ProdutoEstrutura: React.FC = () => {
                 type="search"
                 placeholder="Buscar produtos..."
                 className="pl-8 w-[250px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
@@ -414,14 +376,14 @@ const ProdutoEstrutura: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProdutos.length === 0 ? (
+              {searchedProdutos.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
                     Nenhum produto encontrado.
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredProdutos.map((produto) => (
+                searchedProdutos.map((produto) => (
                   <TableRow key={produto.id}>
                     <TableCell className="font-medium">{produto.id}</TableCell>
                     <TableCell>{produto.nome}</TableCell>
@@ -430,30 +392,24 @@ const ProdutoEstrutura: React.FC = () => {
                     <TableCell>{produto.tempoProducao}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon">
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             className="flex items-center gap-2 cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewBOM(produto);
-                            }}
+                            onClick={(e) => handleViewBOM(produto, e)}
                           >
                             <Eye className="h-4 w-4" />
                             <span>Ver Estrutura</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="flex items-center gap-2 cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditProduct(produto);
-                            }}
+                            onClick={(e) => handleEditProduct(produto, e)}
                           >
                             <FileEdit className="h-4 w-4" />
                             <span>Editar</span>
@@ -461,10 +417,7 @@ const ProdutoEstrutura: React.FC = () => {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             className="flex items-center gap-2 text-destructive cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteProduct(produto.id);
-                            }}
+                            onClick={(e) => handleDeleteProduct(produto.id, e)}
                           >
                             <Trash2 className="h-4 w-4" />
                             <span>Excluir</span>
@@ -480,337 +433,15 @@ const ProdutoEstrutura: React.FC = () => {
         </CardContent>
       </Card>
       
-      {/* Sheet for editing product or viewing BOM */}
-      <Sheet 
-        open={isEditSheetOpen} 
-        onOpenChange={(open) => {
-          setIsEditSheetOpen(open);
-          if (!open) {
-            // Clean up state when closing
-            setTimeout(() => {
-              setSelectedProduto(null);
-              setEditingMateriais([]);
-              setIsViewingBOM(false);
-            }, 300);
-          }
-        }}
-      >
-        <SheetContent className="sm:max-w-[600px] overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>
-              {isViewingBOM 
-                ? `Estrutura de Materiais: ${selectedProduto?.nome}`
-                : `Editar Produto: ${selectedProduto?.nome}`
-              }
-            </SheetTitle>
-            <SheetDescription>
-              {isViewingBOM 
-                ? "Visualize e edite a estrutura de materiais deste produto."
-                : "Edite as informações e estrutura deste produto."
-              }
-            </SheetDescription>
-          </SheetHeader>
-          
-          <div className="grid gap-6 py-6">
-            {!isViewingBOM && (
-              <>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-codigo" className="text-right">
-                    Código
-                  </Label>
-                  <Input
-                    id="edit-codigo"
-                    value={selectedProduto?.id}
-                    className="col-span-3"
-                    readOnly
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-nome" className="text-right">
-                    Nome
-                  </Label>
-                  <Input
-                    id="edit-nome"
-                    value={selectedProduto?.nome}
-                    className="col-span-3"
-                    onChange={(e) => {
-                      if (selectedProduto) {
-                        setSelectedProduto({
-                          ...selectedProduto,
-                          nome: e.target.value
-                        });
-                      }
-                    }}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-categoria" className="text-right">
-                    Categoria
-                  </Label>
-                  <Select 
-                    defaultValue={selectedProduto?.categoria.toLowerCase()}
-                    onValueChange={(value) => {
-                      if (selectedProduto) {
-                        setSelectedProduto({
-                          ...selectedProduto,
-                          categoria: value.charAt(0).toUpperCase() + value.slice(1)
-                        });
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="matriz">Matriz</SelectItem>
-                      <SelectItem value="molde">Molde</SelectItem>
-                      <SelectItem value="ferramenta">Ferramenta</SelectItem>
-                      <SelectItem value="estampo">Estampo</SelectItem>
-                      <SelectItem value="calibrador">Calibrador</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-tempo" className="text-right">
-                    Tempo (horas)
-                  </Label>
-                  <Input
-                    id="edit-tempo"
-                    type="number"
-                    value={selectedProduto?.tempoProducao}
-                    className="col-span-3"
-                    onChange={(e) => {
-                      if (selectedProduto) {
-                        setSelectedProduto({
-                          ...selectedProduto,
-                          tempoProducao: Number(e.target.value)
-                        });
-                      }
-                    }}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="edit-custo" className="text-right">
-                    Custo
-                  </Label>
-                  <Input
-                    id="edit-custo"
-                    type="number"
-                    value={selectedProduto?.custoProducao}
-                    step="0.01"
-                    className="col-span-3"
-                    onChange={(e) => {
-                      if (selectedProduto) {
-                        setSelectedProduto({
-                          ...selectedProduto,
-                          custoProducao: Number(e.target.value)
-                        });
-                      }
-                    }}
-                  />
-                </div>
-              </>
-            )}
-            
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Estrutura de Materiais</h3>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsMaterialDialogOpen(true);
-                  }}
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" />
-                  <span>Adicionar Material</span>
-                </Button>
-              </div>
-              
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Material</TableHead>
-                    <TableHead>Quantidade</TableHead>
-                    <TableHead>Unidade</TableHead>
-                    <TableHead>Custo Un.</TableHead>
-                    <TableHead>Subtotal</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {editingMateriais.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
-                        Nenhum material adicionado à estrutura.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    editingMateriais.map((material) => (
-                      <TableRow key={material.id}>
-                        <TableCell>{material.nome}</TableCell>
-                        <TableCell>{material.quantidade}</TableCell>
-                        <TableCell>{material.unidade}</TableCell>
-                        <TableCell>R$ {material.custoUnitario.toFixed(2)}</TableCell>
-                        <TableCell>
-                          R$ {(material.quantidade * material.custoUnitario).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveMaterial(material.id);
-                            }}
-                          >
-                            <X className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                  {editingMateriais.length > 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-right font-medium">
-                        Custo Total de Materiais:
-                      </TableCell>
-                      <TableCell className="font-bold">
-                        R$ {editingMateriais
-                          .reduce((total, mat) => total + (mat.quantidade * mat.custoUnitario), 0)
-                          .toFixed(2)}
-                      </TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-          
-          <SheetFooter className="mt-4">
-            <Button variant="outline" onClick={(e) => {
-              e.stopPropagation();
-              setIsEditSheetOpen(false);
-            }}>
-              Cancelar
-            </Button>
-            <Button onClick={(e) => {
-              e.stopPropagation();
-              handleSaveProduct();
-            }}>
-              Salvar Alterações
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
-      
-      {/* Dialog for adding material to BOM */}
-      <Dialog 
-        open={isMaterialDialogOpen} 
-        onOpenChange={(open) => {
-          setIsMaterialDialogOpen(open);
-          if (!open) {
-            setMaterialToAdd({ id: "", quantidade: 1 });
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-[500px]" onClick={(e) => e.stopPropagation()}>
-          <DialogHeader>
-            <DialogTitle>Adicionar Material</DialogTitle>
-            <DialogDescription>
-              Selecione um material do estoque para adicionar à estrutura do produto.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="material" className="text-right">
-                Material
-              </Label>
-              <Select 
-                value={materialToAdd.id} 
-                onValueChange={(value) => setMaterialToAdd({...materialToAdd, id: value})}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Selecione um material" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mockMateriais.map((material) => (
-                    <SelectItem key={material.id} value={material.id}>
-                      {material.nome} ({material.estoque} {material.unidade} disponível)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="quantidade" className="text-right">
-                Quantidade
-              </Label>
-              <Input
-                id="quantidade"
-                type="number"
-                min="0.1"
-                step="0.1"
-                value={materialToAdd.quantidade}
-                onChange={(e) => setMaterialToAdd({
-                  ...materialToAdd, 
-                  quantidade: parseFloat(e.target.value) || 0
-                })}
-                className="col-span-3"
-              />
-            </div>
-            
-            {materialToAdd.id && (
-              <div className="bg-muted p-3 rounded-md mt-2">
-                <h4 className="font-medium mb-1">Informações do Material</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Nome:</span>{" "}
-                    {mockMateriais.find(m => m.id === materialToAdd.id)?.nome}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Estoque:</span>{" "}
-                    {mockMateriais.find(m => m.id === materialToAdd.id)?.estoque}{" "}
-                    {mockMateriais.find(m => m.id === materialToAdd.id)?.unidade}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Custo Unitário:</span>{" "}
-                    R$ {mockMateriais.find(m => m.id === materialToAdd.id)?.custo.toFixed(2)}
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Subtotal:</span>{" "}
-                    R$ {(
-                      (mockMateriais.find(m => m.id === materialToAdd.id)?.custo || 0) * 
-                      materialToAdd.quantidade
-                    ).toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMaterialDialogOpen(false);
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAddMaterial();
-              }}
-            >
-              Adicionar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Product editor for viewing or editing product details and BOM */}
+      <ProductEditor
+        isOpen={isProductEditorOpen}
+        onOpenChange={setIsProductEditorOpen}
+        product={selectedProduto}
+        availableMaterials={mockMateriais}
+        onSave={handleSaveProduct}
+        viewOnly={isViewingBOM}
+      />
     </div>
   );
 };
