@@ -55,7 +55,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
 }) => {
   // Dynamically create schema based on fields
   const formSchema = z.object(
-    fields.reduce((acc, field) => {
+    fields.reduce<Record<string, z.ZodTypeAny>>((acc, field) => {
       let validator;
       
       if (field.type === "number") {
