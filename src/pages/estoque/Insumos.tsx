@@ -1,60 +1,10 @@
-
-import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertTriangle,
-  ArrowUpDown,
-  FileEdit,
-  MoreVertical,
-  Package,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import React from "react";
+import CrudPage from "@/components/shared/CrudPage";
 import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, Package } from "lucide-react";
+import FormComponent from "@/components/shared/FormComponent";
 
-// Mock data
+// Mock data (keeping the same mock data)
 const mockInsumos = [
   {
     id: "INS-001",
@@ -108,272 +58,243 @@ const mockInsumos = [
   },
 ];
 
+// Get estoque status component
+const getEstoqueStatus = (atual: number, minimo: number) => {
+  const porcentagem = (atual / minimo) * 100;
+  if (porcentagem <= 50) {
+    return (
+      <div className="flex items-center gap-1 text-destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <span>Crítico</span>
+      </div>
+    );
+  } else if (porcentagem <= 75) {
+    return (
+      <div className="flex items-center gap-1 text-warning">
+        <AlertTriangle className="h-4 w-4" />
+        <span>Baixo</span>
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex items-center gap-1 text-success">
+        <span>Normal</span>
+      </div>
+    );
+  }
+};
+
 const Insumos: React.FC = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  // Form fields definition for create/edit
+  const formFields = [
+    {
+      name: "id",
+      label: "Código",
+      type: "text" as const,
+      placeholder: "Ex: INS-006",
+      required: true,
+    },
+    {
+      name: "nome",
+      label: "Nome",
+      type: "text" as const,
+      placeholder: "Nome do insumo",
+      required: true,
+    },
+    {
+      name: "categoria",
+      label: "Categoria",
+      type: "select" as const,
+      required: true,
+      options: [
+        { value: "Matéria-Prima", label: "Matéria-Prima" },
+        { value: "Componente", label: "Componente" },
+        { value: "Insumo", label: "Insumo" },
+        { value: "Ferramenta", label: "Ferramenta" },
+      ],
+    },
+    {
+      name: "unidade",
+      label: "Unidade",
+      type: "select" as const,
+      required: true,
+      options: [
+        { value: "Kg", label: "Kg" },
+        { value: "Unid", label: "Unidade" },
+        { value: "Litro", label: "Litro" },
+        { value: "Metro", label: "Metro" },
+        { value: "m2", label: "Metro²" },
+      ],
+    },
+    {
+      name: "estoque",
+      label: "Estoque Inicial",
+      type: "number" as const,
+      min: 0,
+      required: true,
+    },
+    {
+      name: "estoqueMinimo",
+      label: "Estoque Mínimo",
+      type: "number" as const,
+      min: 0,
+      required: true,
+    },
+    {
+      name: "custoUnitario",
+      label: "Custo Unitário (R$)",
+      type: "number" as const,
+      min: 0,
+      step: 0.01,
+      required: true,
+    },
+    {
+      name: "localizacao",
+      label: "Localização",
+      type: "text" as const,
+      placeholder: "Ex: A-01-02",
+      required: true,
+    },
+  ];
 
-  const getEstoqueStatus = (atual: number, minimo: number) => {
-    const porcentagem = (atual / minimo) * 100;
-    if (porcentagem <= 50) {
-      return (
-        <div className="flex items-center gap-1 text-destructive">
-          <AlertTriangle className="h-4 w-4" />
-          <span>Crítico</span>
-        </div>
-      );
-    } else if (porcentagem <= 75) {
-      return (
-        <div className="flex items-center gap-1 text-warning">
-          <AlertTriangle className="h-4 w-4" />
-          <span>Baixo</span>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex items-center gap-1 text-success">
-          <span>Normal</span>
-        </div>
-      );
-    }
-  };
+  // Column definition for the table
+  const columns = [
+    {
+      header: "Código",
+      accessorKey: "id",
+    },
+    {
+      header: "Nome",
+      accessorKey: "nome",
+    },
+    {
+      header: "Categoria",
+      accessorKey: "categoria",
+      cell: (item: any) => (
+        <Badge variant="outline">{item.categoria}</Badge>
+      ),
+    },
+    {
+      header: "Estoque",
+      accessorKey: "estoque",
+      cell: (item: any) => (
+        <span className={item.estoque < item.estoqueMinimo ? "text-destructive font-medium" : "font-medium"}>
+          {item.estoque}
+        </span>
+      ),
+    },
+    {
+      header: "Unidade",
+      accessorKey: "unidade",
+    },
+    {
+      header: "Localização",
+      accessorKey: "localizacao",
+    },
+    {
+      header: "Custo Unit.",
+      accessorKey: "custoUnitario",
+      cell: (item: any) => (
+        <span>R$ {item.custoUnitario.toFixed(2)}</span>
+      ),
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      cell: (item: any) => getEstoqueStatus(item.estoque, item.estoqueMinimo),
+    },
+  ];
 
-  const filteredInsumos = mockInsumos.filter(
-    (insumo) =>
-      insumo.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      insumo.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      insumo.categoria.toLowerCase().includes(searchTerm.toLowerCase())
+  // Custom actions for material movement
+  const customActions = (item: any) => (
+    <div
+      className="flex items-center gap-2 cursor-pointer px-2 py-1.5 text-sm rounded-sm hover:bg-accent"
+      onClick={(e) => {
+        e.stopPropagation();
+        console.log("Movimentar estoque para:", item.id);
+      }}
+    >
+      <Package className="h-4 w-4" />
+      <span>Movimentar Estoque</span>
+    </div>
   );
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Insumos e Materiais</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center gap-1">
-              <Plus className="h-4 w-4" />
-              <span>Novo Insumo</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Cadastrar Novo Insumo</DialogTitle>
-              <DialogDescription>
-                Adicione um novo material ou insumo ao estoque.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="codigo" className="text-right">
-                  Código
-                </Label>
-                <Input
-                  id="codigo"
-                  placeholder="Ex: INS-006"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="nome" className="text-right">
-                  Nome
-                </Label>
-                <Input
-                  id="nome"
-                  placeholder="Nome do insumo"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="categoria" className="text-right">
-                  Categoria
-                </Label>
-                <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="materia-prima">Matéria-Prima</SelectItem>
-                    <SelectItem value="componente">Componente</SelectItem>
-                    <SelectItem value="insumo">Insumo</SelectItem>
-                    <SelectItem value="ferramenta">Ferramenta</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="unidade" className="text-right">
-                  Unidade
-                </Label>
-                <Select>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Selecione uma unidade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="kg">Kg</SelectItem>
-                    <SelectItem value="unid">Unidade</SelectItem>
-                    <SelectItem value="litro">Litro</SelectItem>
-                    <SelectItem value="metro">Metro</SelectItem>
-                    <SelectItem value="m2">Metro²</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="estoque" className="text-right">
-                  Estoque Inicial
-                </Label>
-                <Input
-                  id="estoque"
-                  type="number"
-                  min="0"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="estoqueMinimo" className="text-right">
-                  Estoque Mínimo
-                </Label>
-                <Input
-                  id="estoqueMinimo"
-                  type="number"
-                  min="0"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="custoUnitario" className="text-right">
-                  Custo Unitário (R$)
-                </Label>
-                <Input
-                  id="custoUnitario"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className="col-span-3"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="localizacao" className="text-right">
-                  Localização
-                </Label>
-                <Input
-                  id="localizacao"
-                  placeholder="Ex: A-01-02"
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={() => setIsDialogOpen(false)}>Salvar</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+  // View component for detailed view
+  const InsumoView = ({ data, onClose }: { data: any, onClose: () => void }) => (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Código</p>
+          <p className="font-medium">{data.id}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Categoria</p>
+          <Badge variant="outline">{data.categoria}</Badge>
+        </div>
+        <div className="col-span-2">
+          <p className="text-sm text-muted-foreground">Nome</p>
+          <p className="font-medium">{data.nome}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Unidade</p>
+          <p>{data.unidade}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Localização</p>
+          <p>{data.localizacao}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Estoque Atual</p>
+          <p className={data.estoque < data.estoqueMinimo ? "text-destructive font-medium" : "font-medium"}>
+            {data.estoque} {data.unidade}
+          </p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Estoque Mínimo</p>
+          <p>{data.estoqueMinimo} {data.unidade}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Custo Unitário</p>
+          <p>R$ {data.custoUnitario.toFixed(2)}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Status</p>
+          {getEstoqueStatus(data.estoque, data.estoqueMinimo)}
+        </div>
       </div>
-
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle>Controle de Estoque</CardTitle>
-              <CardDescription>
-                Gerencie todos os insumos, materiais e componentes da ferramentaria.
-              </CardDescription>
-            </div>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Buscar insumos..."
-                className="pl-8 w-[250px]"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Código</TableHead>
-                <TableHead>Nome</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>
-                  <Button variant="ghost" className="flex items-center gap-1 -ml-4">
-                    <span>Estoque</span>
-                    <ArrowUpDown className="h-3 w-3" />
-                  </Button>
-                </TableHead>
-                <TableHead>Unidade</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead>Custo Unit.</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredInsumos.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
-                    Nenhum insumo encontrado.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredInsumos.map((insumo) => (
-                  <TableRow key={insumo.id}>
-                    <TableCell className="font-medium">{insumo.id}</TableCell>
-                    <TableCell>{insumo.nome}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{insumo.categoria}</Badge>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {insumo.estoque < insumo.estoqueMinimo ? (
-                        <span className="text-destructive">{insumo.estoque}</span>
-                      ) : (
-                        insumo.estoque
-                      )}
-                    </TableCell>
-                    <TableCell>{insumo.unidade}</TableCell>
-                    <TableCell>{insumo.localizacao}</TableCell>
-                    <TableCell>R$ {insumo.custoUnitario.toFixed(2)}</TableCell>
-                    <TableCell>
-                      {getEstoqueStatus(insumo.estoque, insumo.estoqueMinimo)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                            <Package className="h-4 w-4" />
-                            <span>Movimentar Estoque</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                            <FileEdit className="h-4 w-4" />
-                            <span>Editar</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="flex items-center gap-2 text-destructive cursor-pointer">
-                            <Trash2 className="h-4 w-4" />
-                            <span>Excluir</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
+  );
+
+  // Handlers for CRUD operations
+  const handleCreateItem = (data: any) => {
+    console.log("Criar novo insumo:", data);
+    // In a real app, we would call an API here
+  };
+
+  const handleUpdateItem = (id: string, data: any) => {
+    console.log("Atualizar insumo:", id, data);
+    // In a real app, we would call an API here
+  };
+
+  const handleDeleteItem = (id: string) => {
+    console.log("Excluir insumo:", id);
+    // In a real app, we would call an API here
+  };
+
+  return (
+    <CrudPage
+      title="Insumos e Materiais"
+      description="Controle de Estoque"
+      entityName="Insumo"
+      columns={columns}
+      data={mockInsumos}
+      formFields={formFields}
+      onCreateItem={handleCreateItem}
+      onUpdateItem={handleUpdateItem}
+      onDeleteItem={handleDeleteItem}
+      viewComponent={<InsumoView data={{}} onClose={() => {}} />}
+      customActions={customActions}
+    />
   );
 };
 
