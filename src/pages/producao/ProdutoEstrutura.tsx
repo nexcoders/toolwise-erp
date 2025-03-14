@@ -145,24 +145,33 @@ const ProdutoEstrutura: React.FC = () => {
   // State for product materials (editing)
   const [editingMateriais, setEditingMateriais] = useState<any[]>([]);
   
-  // Handler for viewing BOM
-  const handleViewBOM = (produto: any) => {
-    setSelectedProduto(produto);
+  // Handler for viewing BOM - Fixed to properly stop event propagation
+  const handleViewBOM = (produto: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setSelectedProduto({...produto});
     setEditingMateriais([...produto.materiais]);
     setIsViewingBOM(true);
     setIsEditSheetOpen(true);
   };
   
-  // Handler for editing product
-  const handleEditProduct = (produto: any) => {
-    setSelectedProduto(produto);
+  // Handler for editing product - Fixed to properly stop event propagation
+  const handleEditProduct = (produto: any, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    setSelectedProduto({...produto});
     setEditingMateriais([...produto.materiais]);
     setIsViewingBOM(false);
     setIsEditSheetOpen(true);
   };
   
-  // Handler for deletion confirmation
-  const handleDeleteProduct = (id: string) => {
+  // Handler for deletion confirmation - Fixed to properly stop event propagation
+  const handleDeleteProduct = (id: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     toast({
       title: "Produto excluído",
       description: `O produto ${id} foi excluído com sucesso.`,
@@ -221,8 +230,11 @@ const ProdutoEstrutura: React.FC = () => {
     });
   };
   
-  // Handler for removing material from BOM
-  const handleRemoveMaterial = (materialId: string) => {
+  // Handler for removing material from BOM - Fixed to properly stop event propagation
+  const handleRemoveMaterial = (materialId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
     setEditingMateriais(editingMateriais.filter(m => m.id !== materialId));
     
     toast({
@@ -419,7 +431,7 @@ const ProdutoEstrutura: React.FC = () => {
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
+                          <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -428,14 +440,20 @@ const ProdutoEstrutura: React.FC = () => {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => handleViewBOM(produto)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewBOM(produto);
+                            }}
                           >
                             <Eye className="h-4 w-4" />
                             <span>Ver Estrutura</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem 
                             className="flex items-center gap-2 cursor-pointer"
-                            onClick={() => handleEditProduct(produto)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditProduct(produto);
+                            }}
                           >
                             <FileEdit className="h-4 w-4" />
                             <span>Editar</span>
@@ -443,7 +461,10 @@ const ProdutoEstrutura: React.FC = () => {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem 
                             className="flex items-center gap-2 text-destructive cursor-pointer"
-                            onClick={() => handleDeleteProduct(produto.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteProduct(produto.id);
+                            }}
                           >
                             <Trash2 className="h-4 w-4" />
                             <span>Excluir</span>
@@ -460,7 +481,20 @@ const ProdutoEstrutura: React.FC = () => {
       </Card>
       
       {/* Sheet for editing product or viewing BOM */}
-      <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
+      <Sheet 
+        open={isEditSheetOpen} 
+        onOpenChange={(open) => {
+          setIsEditSheetOpen(open);
+          if (!open) {
+            // Clean up state when closing
+            setTimeout(() => {
+              setSelectedProduto(null);
+              setEditingMateriais([]);
+              setIsViewingBOM(false);
+            }, 300);
+          }
+        }}
+      >
         <SheetContent className="sm:max-w-[600px] overflow-y-auto">
           <SheetHeader>
             <SheetTitle>
@@ -499,13 +533,31 @@ const ProdutoEstrutura: React.FC = () => {
                     id="edit-nome"
                     value={selectedProduto?.nome}
                     className="col-span-3"
+                    onChange={(e) => {
+                      if (selectedProduto) {
+                        setSelectedProduto({
+                          ...selectedProduto,
+                          nome: e.target.value
+                        });
+                      }
+                    }}
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="edit-categoria" className="text-right">
                     Categoria
                   </Label>
-                  <Select defaultValue={selectedProduto?.categoria.toLowerCase()}>
+                  <Select 
+                    defaultValue={selectedProduto?.categoria.toLowerCase()}
+                    onValueChange={(value) => {
+                      if (selectedProduto) {
+                        setSelectedProduto({
+                          ...selectedProduto,
+                          categoria: value.charAt(0).toUpperCase() + value.slice(1)
+                        });
+                      }
+                    }}
+                  >
                     <SelectTrigger className="col-span-3">
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
@@ -527,6 +579,14 @@ const ProdutoEstrutura: React.FC = () => {
                     type="number"
                     value={selectedProduto?.tempoProducao}
                     className="col-span-3"
+                    onChange={(e) => {
+                      if (selectedProduto) {
+                        setSelectedProduto({
+                          ...selectedProduto,
+                          tempoProducao: Number(e.target.value)
+                        });
+                      }
+                    }}
                   />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
@@ -539,6 +599,14 @@ const ProdutoEstrutura: React.FC = () => {
                     value={selectedProduto?.custoProducao}
                     step="0.01"
                     className="col-span-3"
+                    onChange={(e) => {
+                      if (selectedProduto) {
+                        setSelectedProduto({
+                          ...selectedProduto,
+                          custoProducao: Number(e.target.value)
+                        });
+                      }
+                    }}
                   />
                 </div>
               </>
@@ -550,7 +618,10 @@ const ProdutoEstrutura: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => setIsMaterialDialogOpen(true)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMaterialDialogOpen(true);
+                  }}
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" />
                   <span>Adicionar Material</span>
@@ -589,7 +660,10 @@ const ProdutoEstrutura: React.FC = () => {
                           <Button 
                             variant="ghost" 
                             size="icon"
-                            onClick={() => handleRemoveMaterial(material.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveMaterial(material.id);
+                            }}
                           >
                             <X className="h-4 w-4 text-destructive" />
                           </Button>
@@ -616,10 +690,16 @@ const ProdutoEstrutura: React.FC = () => {
           </div>
           
           <SheetFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsEditSheetOpen(false)}>
+            <Button variant="outline" onClick={(e) => {
+              e.stopPropagation();
+              setIsEditSheetOpen(false);
+            }}>
               Cancelar
             </Button>
-            <Button onClick={handleSaveProduct}>
+            <Button onClick={(e) => {
+              e.stopPropagation();
+              handleSaveProduct();
+            }}>
               Salvar Alterações
             </Button>
           </SheetFooter>
@@ -627,8 +707,16 @@ const ProdutoEstrutura: React.FC = () => {
       </Sheet>
       
       {/* Dialog for adding material to BOM */}
-      <Dialog open={isMaterialDialogOpen} onOpenChange={setIsMaterialDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+      <Dialog 
+        open={isMaterialDialogOpen} 
+        onOpenChange={(open) => {
+          setIsMaterialDialogOpen(open);
+          if (!open) {
+            setMaterialToAdd({ id: "", quantidade: 1 });
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[500px]" onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>Adicionar Material</DialogTitle>
             <DialogDescription>
@@ -703,10 +791,23 @@ const ProdutoEstrutura: React.FC = () => {
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsMaterialDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMaterialDialogOpen(false);
+              }}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleAddMaterial}>Adicionar</Button>
+            <Button 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddMaterial();
+              }}
+            >
+              Adicionar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
