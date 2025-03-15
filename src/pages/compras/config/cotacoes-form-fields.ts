@@ -1,4 +1,15 @@
 
+// Define pre-registered items with their details
+const preRegisteredItems = [
+  { id: "aco-carbono", label: "Aço Carbono 1045", unit: "kg", price: 15.75 },
+  { id: "aco-inox", label: "Aço Inox 304", unit: "kg", price: 32.50 },
+  { id: "parafuso-m8", label: "Parafuso M8x1.25", unit: "unid", price: 0.75 },
+  { id: "porca-m8", label: "Porca M8x1.25", unit: "unid", price: 0.45 },
+  { id: "arruela-m8", label: "Arruela M8", unit: "unid", price: 0.25 },
+  { id: "tubo-10mm", label: "Tubo 10mm", unit: "m", price: 8.50 },
+  { id: "chapa-2mm", label: "Chapa 2mm", unit: "m²", price: 45.00 },
+];
+
 export const cotacoesFormFields = [
   {
     name: "fornecedor",
@@ -21,23 +32,10 @@ export const cotacoesFormFields = [
     required: true,
   },
   {
-    name: "itensIds",
+    name: "itens",
     label: "Itens da Cotação",
-    type: "multiselect",
-    options: [
-      { value: "aco-carbono", label: "Aço Carbono 1045" },
-      { value: "aco-inox", label: "Aço Inox 304" },
-      { value: "parafuso-m8", label: "Parafuso M8x1.25" },
-      { value: "porca-m8", label: "Porca M8x1.25" },
-      { value: "arruela-m8", label: "Arruela M8" },
-    ],
-    required: true,
-  },
-  {
-    name: "quantidades",
-    label: "Quantidades (separadas por vírgula)",
-    type: "text",
-    placeholder: "10, 20, 5",
+    type: "itemsSelector",
+    items: preRegisteredItems,
     required: true,
   },
   {
@@ -47,3 +45,6 @@ export const cotacoesFormFields = [
     required: false,
   },
 ];
+
+// Export pre-registered items for use in other components
+export { preRegisteredItems };

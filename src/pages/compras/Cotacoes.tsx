@@ -7,6 +7,17 @@ import { cotacoesFormFields } from "./config/cotacoes-form-fields";
 import { mockCotacoes } from "./data/cotacoes-mock";
 import CotacaoView from "./components/CotacaoView";
 import { FileEdit, Eye, Trash2, Filter, Search } from "lucide-react";
+import ItemsSelector, { Item } from "./components/ItemsSelector";
+
+// Add a custom field renderer for the ItemsSelector component
+const customFieldRenderers = {
+  itemsSelector: (field: any, value: any, onChange: (value: any) => void) => (
+    <ItemsSelector 
+      value={value || []} 
+      onChange={(items) => onChange(items)}
+    />
+  ),
+};
 
 const Cotacoes: React.FC = () => {
   const { toast } = useToast();
@@ -18,17 +29,18 @@ const Cotacoes: React.FC = () => {
     // Simular geração de ID
     const newId = `COT-${String(cotacoes.length + 1).padStart(3, '0')}`;
     
-    // Calcular número de itens
-    const itensCount = data.itensIds ? data.itensIds.length : 0;
-    
-    // Gerar valor total aleatório entre 500 e 5000
-    const valorTotal = Math.random() * 4500 + 500;
+    // Calcular valor total da cotação baseado nos itens selecionados
+    const itens = data.itens || [];
+    const valorTotal = itens.reduce(
+      (total: number, item: Item) => total + (item.quantity * item.price), 
+      0
+    );
     
     // Criar nova cotação
     const newCotacao = {
       ...data,
       id: newId,
-      itens: itensCount,
+      itensCount: itens.length,
       valorTotal: parseFloat(valorTotal.toFixed(2)),
       status: "pendente",
     };
@@ -45,14 +57,19 @@ const Cotacoes: React.FC = () => {
   const handleUpdateItem = (id: string, data: any) => {
     const index = cotacoes.findIndex((cotacao) => cotacao.id === id);
     if (index !== -1) {
-      // Calcular número de itens
-      const itensCount = data.itensIds ? data.itensIds.length : 0;
+      // Calcular valor total da cotação baseado nos itens selecionados
+      const itens = data.itens || [];
+      const valorTotal = itens.reduce(
+        (total: number, item: Item) => total + (item.quantity * item.price), 
+        0
+      );
       
       // Atualizar cotação
       const updatedCotacao = {
         ...cotacoes[index],
         ...data,
-        itens: itensCount,
+        itensCount: itens.length,
+        valorTotal: parseFloat(valorTotal.toFixed(2)),
       };
       
       const updatedCotacoes = [...cotacoes];
@@ -133,12 +150,6 @@ const Cotacoes: React.FC = () => {
     { value: "recusadas", label: "Recusadas", icon: <Filter className="h-4 w-4" /> },
   ];
 
-  const customFilters = (
-    <div className="flex items-center space-x-2">
-      {/* Implementação futura para filtros adicionais se necessário */}
-    </div>
-  );
-
   return (
     <CrudPage
       title="Cotações de Fornecedores"
@@ -158,8 +169,8 @@ const Cotacoes: React.FC = () => {
       searchValue={searchTerm}
       onSearchChange={setSearchTerm}
       searchPlaceholder="Buscar cotações..."
-      customFilters={customFilters}
       entityName="Cotação"
+      customFieldRenderers={customFieldRenderers}
     />
   );
 };

@@ -21,11 +21,12 @@ import { Button } from "@/components/ui/button";
 interface FormFieldConfig {
   name: string;
   label: string;
-  type: "text" | "number" | "email" | "textarea" | "select" | "date";
+  type: "text" | "number" | "email" | "textarea" | "select" | "date" | "multiselect" | "itemsSelector";
   placeholder?: string;
   description?: string;
   required?: boolean;
   options?: { value: string; label: string }[];
+  items?: any[];
   min?: number;
   max?: number;
   step?: number;
@@ -41,6 +42,7 @@ interface FormComponentProps {
   submitLabel?: string;
   cancelLabel?: string;
   onCancel?: () => void;
+  customFieldRenderers?: Record<string, (field: any, value: any, onChange: (value: any) => void) => React.ReactNode>;
 }
 
 const FormComponent: React.FC<FormComponentProps> = ({
@@ -52,6 +54,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
   submitLabel = "Salvar",
   cancelLabel = "Cancelar",
   onCancel,
+  customFieldRenderers = {},
 }) => {
   // Dynamically create schema based on fields
   const formSchema = z.object(
@@ -66,6 +69,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
         validator = z.string().email();
       } else if (field.type === "select") {
         validator = z.string();
+      } else if (field.type === "multiselect") {
+        validator = z.array(z.string());
+      } else if (field.type === "itemsSelector") {
+        validator = z.array(z.any());
       } else {
         validator = z.string();
         if (field.required) validator = validator.min(1, { message: "Campo obrigatório" });
@@ -107,7 +114,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
                   <FormItem>
                     <FormLabel>{field.label}</FormLabel>
                     <FormControl>
-                      {field.type === "textarea" ? (
+                      {customFieldRenderers[field.type] ? (
+                        customFieldRenderers[field.type](field, formField.value, formField.onChange)
+                      ) : field.type === "textarea" ? (
                         <Textarea
                           placeholder={field.placeholder}
                           {...formField}

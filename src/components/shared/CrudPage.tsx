@@ -1,12 +1,4 @@
-
 import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -16,74 +8,61 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { PlusCircle, Search } from "lucide-react";
+import { cn } from "@/lib/utils";
+import FormComponent from "./FormComponent";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Eye,
-  FileEdit,
-  MoreVertical,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import FormComponent from "./FormComponent";
 
-interface CrudPageProps {
+export interface Column {
+  header: string;
+  accessorKey: string;
+  cell?: (item: any) => React.ReactNode;
+}
+
+export interface ActionButton {
+  icon: React.ReactNode;
+  label: string;
+  action: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+}
+
+export interface TabOption {
+  value: string;
+  label: string;
+  icon?: React.ReactNode;
+}
+
+export interface CrudPageProps {
   title: string;
-  description: string;
+  description?: string;
   entityName: string;
-  columns: {
-    header: string;
-    accessorKey: string;
-    cell?: (item: any) => React.ReactNode;
-  }[];
   data: any[];
+  columns: Column[];
   formFields: any[];
-  onCreateItem: (data: any) => void;
-  onUpdateItem: (id: string, data: any) => void;
+  onCreateItem: (data: any) => any;
+  onUpdateItem: (id: string, data: any) => any;
   onDeleteItem: (id: string) => void;
   viewComponent: React.ReactNode;
   customViewProps?: Record<string, any>;
-  actionButtons?: {
-    icon: React.ReactNode;
-    label: string;
-    action: string;
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-  }[];
-  tabOptions?: {
-    value: string;
-    label: string;
-    icon?: React.ReactNode;
-  }[];
-  activeTab?: string;
+  actionButtons?: ActionButton[];
   onTabChange?: (value: string) => void;
+  activeTab?: string;
+  tabOptions?: TabOption[];
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   customFilters?: React.ReactNode;
+  customActions?: (item: any) => React.ReactNode;
+  customFieldRenderers?: Record<string, (field: any, value: any, onChange: (value: any) => void) => React.ReactNode>;
 }
 
 const CrudPage: React.FC<CrudPageProps> = ({
@@ -99,13 +78,15 @@ const CrudPage: React.FC<CrudPageProps> = ({
   viewComponent,
   customViewProps,
   actionButtons,
-  tabOptions,
-  activeTab,
   onTabChange,
+  activeTab,
+  tabOptions,
   searchValue = "",
   onSearchChange,
   searchPlaceholder = "Buscar...",
   customFilters,
+  customActions,
+  customFieldRenderers,
 }) => {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -169,7 +150,7 @@ const CrudPage: React.FC<CrudPageProps> = ({
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center gap-1">
-              <Plus className="h-4 w-4" />
+              <PlusCircle className="h-4 w-4" />
               <span>Novo {entityName}</span>
             </Button>
           </DialogTrigger>
