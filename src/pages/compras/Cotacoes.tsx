@@ -149,7 +149,7 @@ const Cotacoes: React.FC = () => {
       onCreate={handleCreateCotacao}
       onUpdate={handleUpdateCotacao}
       onDelete={handleDeleteCotacao}
-      viewComponent={CotacaoView}
+      viewComponent={<CotacaoView />}
       customViewProps={{ onStatusChange: handleStatusChange }}
       actionButtons={actionButtons}
       tabOptions={tabOptions}
@@ -159,6 +159,7 @@ const Cotacoes: React.FC = () => {
       onSearchChange={setSearchTerm}
       searchPlaceholder="Buscar cotações..."
       customFilters={customFilters}
+      entityName="Cotação"
     />
   );
 };
