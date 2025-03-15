@@ -14,7 +14,7 @@ const Cotacoes: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("todas");
 
-  const handleCreateCotacao = (data: any) => {
+  const handleCreateItem = (data: any) => {
     // Simular geração de ID
     const newId = `COT-${String(cotacoes.length + 1).padStart(3, '0')}`;
     
@@ -42,7 +42,7 @@ const Cotacoes: React.FC = () => {
     return newCotacao;
   };
 
-  const handleUpdateCotacao = (id: string, data: any) => {
+  const handleUpdateItem = (id: string, data: any) => {
     const index = cotacoes.findIndex((cotacao) => cotacao.id === id);
     if (index !== -1) {
       // Calcular número de itens
@@ -69,7 +69,7 @@ const Cotacoes: React.FC = () => {
     return null;
   };
 
-  const handleDeleteCotacao = (id: string) => {
+  const handleDeleteItem = (id: string) => {
     setCotacoes(cotacoes.filter((cotacao) => cotacao.id !== id));
     toast({
       title: "Cotação excluída",
@@ -146,10 +146,10 @@ const Cotacoes: React.FC = () => {
       data={filteredCotacoes}
       columns={cotacoesColumns}
       formFields={cotacoesFormFields}
-      onCreate={handleCreateCotacao}
-      onUpdate={handleUpdateCotacao}
-      onDelete={handleDeleteCotacao}
-      viewComponent={<CotacaoView />}
+      onCreateItem={handleCreateItem}
+      onUpdateItem={handleUpdateItem}
+      onDeleteItem={handleDeleteItem}
+      viewComponent={<CotacaoView data={{}} onClose={() => {}} />}
       customViewProps={{ onStatusChange: handleStatusChange }}
       actionButtons={actionButtons}
       tabOptions={tabOptions}

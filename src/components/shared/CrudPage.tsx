@@ -62,11 +62,28 @@ interface CrudPageProps {
   }[];
   data: any[];
   formFields: any[];
-  onCreateItem?: (data: any) => void;
-  onUpdateItem?: (id: string, data: any) => void;
-  onDeleteItem?: (id: string) => void;
-  viewComponent?: React.ReactNode;
-  customActions?: (item: any) => React.ReactNode;
+  onCreateItem: (data: any) => void;
+  onUpdateItem: (id: string, data: any) => void;
+  onDeleteItem: (id: string) => void;
+  viewComponent: React.ReactNode;
+  customViewProps?: Record<string, any>;
+  actionButtons?: {
+    icon: React.ReactNode;
+    label: string;
+    action: string;
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  }[];
+  tabOptions?: {
+    value: string;
+    label: string;
+    icon?: React.ReactNode;
+  }[];
+  activeTab?: string;
+  onTabChange?: (value: string) => void;
+  searchValue?: string;
+  onSearchChange?: (value: string) => void;
+  searchPlaceholder?: string;
+  customFilters?: React.ReactNode;
 }
 
 const CrudPage: React.FC<CrudPageProps> = ({
@@ -80,25 +97,21 @@ const CrudPage: React.FC<CrudPageProps> = ({
   onUpdateItem,
   onDeleteItem,
   viewComponent,
-  customActions,
+  customViewProps,
+  actionButtons,
+  tabOptions,
+  activeTab,
+  onTabChange,
+  searchValue = "",
+  onSearchChange,
+  searchPlaceholder = "Buscar...",
+  customFilters,
 }) => {
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-
-  // Filter data based on search term
-  const filteredData = searchTerm
-    ? data.filter((item) => {
-        return Object.values(item).some(
-          (value) =>
-            value &&
-            value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      })
-    : data;
 
   const handleView = (item: any, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -180,6 +193,22 @@ const CrudPage: React.FC<CrudPageProps> = ({
         </Dialog>
       </div>
 
+      {tabOptions && (
+        <div className="flex space-x-2 border-b pb-2">
+          {tabOptions.map((tab) => (
+            <Button
+              key={tab.value}
+              variant={activeTab === tab.value ? "default" : "ghost"}
+              className="flex items-center gap-1"
+              onClick={() => onTabChange && onTabChange(tab.value)}
+            >
+              {tab.icon}
+              <span>{tab.label}</span>
+            </Button>
+          ))}
+        </div>
+      )}
+
       <Card>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-center">
@@ -189,15 +218,18 @@ const CrudPage: React.FC<CrudPageProps> = ({
                 Gerencie {title.toLowerCase()} do sistema.
               </CardDescription>
             </div>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder={`Buscar ${title.toLowerCase()}...`}
-                className="pl-8 w-[250px]"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+            <div className="flex items-center gap-4">
+              {customFilters}
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder={searchPlaceholder}
+                  className="pl-8 w-[250px]"
+                  value={searchValue}
+                  onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+                />
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -212,7 +244,7 @@ const CrudPage: React.FC<CrudPageProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredData.length === 0 ? (
+              {data.length === 0 ? (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length + 1}
@@ -222,7 +254,7 @@ const CrudPage: React.FC<CrudPageProps> = ({
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredData.map((item) => (
+                data.map((item) => (
                   <TableRow key={item.id}>
                     {columns.map((column, index) => (
                       <TableCell key={index}>
@@ -232,44 +264,89 @@ const CrudPage: React.FC<CrudPageProps> = ({
                       </TableCell>
                     ))}
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {viewComponent && (
+                      {actionButtons ? (
+                        <div className="flex justify-end gap-2">
+                          {actionButtons.map((button, index) => {
+                            if (button.action === "view" && viewComponent) {
+                              return (
+                                <Button
+                                  key={index}
+                                  variant={button.variant || "ghost"}
+                                  size="icon"
+                                  onClick={(e) => handleView(item, e)}
+                                  title={button.label}
+                                >
+                                  {button.icon}
+                                </Button>
+                              );
+                            }
+                            if (button.action === "edit") {
+                              return (
+                                <Button
+                                  key={index}
+                                  variant={button.variant || "ghost"}
+                                  size="icon"
+                                  onClick={(e) => handleEdit(item, e)}
+                                  title={button.label}
+                                >
+                                  {button.icon}
+                                </Button>
+                              );
+                            }
+                            if (button.action === "delete") {
+                              return (
+                                <Button
+                                  key={index}
+                                  variant={button.variant || "ghost"}
+                                  size="icon"
+                                  onClick={(e) => handleDelete(item.id, e)}
+                                  title={button.label}
+                                >
+                                  {button.icon}
+                                </Button>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                            <Button variant="ghost" size="icon">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {viewComponent && (
+                              <DropdownMenuItem
+                                className="flex items-center gap-2 cursor-pointer"
+                                onClick={(e) => handleView(item, e)}
+                              >
+                                <Eye className="h-4 w-4" />
+                                <span>Visualizar</span>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               className="flex items-center gap-2 cursor-pointer"
-                              onClick={(e) => handleView(item, e)}
+                              onClick={(e) => handleEdit(item, e)}
                             >
-                              <Eye className="h-4 w-4" />
-                              <span>Visualizar</span>
+                              <FileEdit className="h-4 w-4" />
+                              <span>Editar</span>
                             </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 cursor-pointer"
-                            onClick={(e) => handleEdit(item, e)}
-                          >
-                            <FileEdit className="h-4 w-4" />
-                            <span>Editar</span>
-                          </DropdownMenuItem>
-                          
-                          {customActions && customActions(item)}
-                          
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="flex items-center gap-2 text-destructive cursor-pointer"
-                            onClick={(e) => handleDelete(item.id, e)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span>Excluir</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="flex items-center gap-2 text-destructive cursor-pointer"
+                              onClick={(e) => handleDelete(item.id, e)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span>Excluir</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -321,6 +398,7 @@ const CrudPage: React.FC<CrudPageProps> = ({
                 {React.cloneElement(viewComponent as React.ReactElement, {
                   data: selectedItem,
                   onClose: () => setIsViewSheetOpen(false),
+                  ...customViewProps
                 })}
               </div>
             )}
