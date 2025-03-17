@@ -272,7 +272,7 @@ const RDStationTutorial: React.FC = () => {
                 
                 <div className="border rounded-md p-4 space-y-2 bg-muted/50">
                   <ol className="list-decimal pl-6 space-y-2">
-                    <li>No RD Station, acesse "Configurações" > "Campos de contato"</li>
+                    <li>No RD Station, acesse "Configurações" &gt; "Campos de contato"</li>
                     <li>Clique em "Criar campo"</li>
                     <li>Escolha o tipo de campo (texto, número, data, etc.)</li>
                     <li>Defina um nome para o campo (ex: "Status da Oportunidade")</li>
@@ -312,7 +312,7 @@ const RDStationTutorial: React.FC = () => {
                 
                 <div className="border rounded-md p-4 space-y-2 bg-muted/50">
                   <ol className="list-decimal pl-6 space-y-2">
-                    <li>No RD Station, acesse "Configurações" > "Integrações" > "Webhooks"</li>
+                    <li>No RD Station, acesse "Configurações" &gt; "Integrações" &gt; "Webhooks"</li>
                     <li>Clique em "Criar webhook"</li>
                     <li>Selecione o evento que deseja monitorar (ex: "Conversão de Lead", "Oportunidade Criada")</li>
                     <li>No campo URL, insira a URL de webhook do seu CRM</li>
