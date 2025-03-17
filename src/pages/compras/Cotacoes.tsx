@@ -11,10 +11,11 @@ import ItemsSelector, { Item } from "./components/ItemsSelector";
 
 // Add a custom field renderer for the ItemsSelector component
 const customFieldRenderers = {
-  itemsSelector: (field: any, value: any, onChange: (value: any) => void) => (
+  itemsSelector: (field: any, value: any, onChange: (value: any) => void, formValues: any) => (
     <ItemsSelector 
       value={value || []} 
       onChange={(items) => onChange(items)}
+      supplierFilter={formValues.fornecedor} // Pass the selected supplier to filter items
     />
   ),
 };

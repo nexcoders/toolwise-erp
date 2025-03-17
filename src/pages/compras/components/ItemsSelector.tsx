@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,12 +17,31 @@ export interface Item {
 interface ItemsSelectorProps {
   value: Item[];
   onChange: (items: Item[]) => void;
+  supplierFilter?: string; // New prop to filter items by supplier
 }
 
-const ItemsSelector: React.FC<ItemsSelectorProps> = ({ value = [], onChange }) => {
+const ItemsSelector: React.FC<ItemsSelectorProps> = ({ value = [], onChange, supplierFilter }) => {
   const [items, setItems] = useState<Item[]>(value);
   const [selectedItemId, setSelectedItemId] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
+  const [filteredItems, setFilteredItems] = useState(preRegisteredItems);
+
+  // Filter items based on the supplier
+  useEffect(() => {
+    if (supplierFilter) {
+      const filtered = preRegisteredItems.filter(item => 
+        item.suppliers && item.suppliers.includes(supplierFilter)
+      );
+      setFilteredItems(filtered);
+      
+      // Reset selection if previously selected item is no longer available
+      if (selectedItemId && !filtered.some(item => item.id === selectedItemId)) {
+        setSelectedItemId("");
+      }
+    } else {
+      setFilteredItems(preRegisteredItems);
+    }
+  }, [supplierFilter, selectedItemId]);
 
   const addItem = () => {
     if (!selectedItemId || quantity <= 0) return;
@@ -72,7 +91,7 @@ const ItemsSelector: React.FC<ItemsSelectorProps> = ({ value = [], onChange }) =
           onChange={(e) => setSelectedItemId(e.target.value)}
         >
           <option value="">Selecione um item</option>
-          {preRegisteredItems.map((item) => (
+          {filteredItems.map((item) => (
             <option key={item.id} value={item.id}>
               {item.label} ({item.unit})
             </option>
@@ -89,6 +108,12 @@ const ItemsSelector: React.FC<ItemsSelectorProps> = ({ value = [], onChange }) =
           <Plus className="h-4 w-4 mr-1" /> Adicionar
         </Button>
       </div>
+
+      {filteredItems.length === 0 && supplierFilter && (
+        <div className="text-center py-4 text-amber-600 bg-amber-50 border border-amber-200 rounded-md">
+          Este fornecedor não possui itens registrados. Selecione outro fornecedor ou cadastre novos itens no estoque.
+        </div>
+      )}
 
       {items.length > 0 && (
         <Table>
