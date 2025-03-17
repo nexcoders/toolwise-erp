@@ -50,11 +50,6 @@ const Fornecedores: React.FC = () => {
     // In a real app, we would call an API here
   };
 
-  // Handler for viewing a fornecedor
-  const handleViewItem = (item: any) => {
-    setSelectedFornecedor(item);
-  };
-
   // Handler for closing the view
   const handleCloseView = () => {
     setSelectedFornecedor(null);
@@ -71,7 +66,6 @@ const Fornecedores: React.FC = () => {
       onCreateItem={handleCreateItem}
       onUpdateItem={handleUpdateItem}
       onDeleteItem={handleDeleteItem}
-      onViewItem={handleViewItem}
       viewComponent={
         <FornecedorView 
           data={selectedFornecedor || {}} 
