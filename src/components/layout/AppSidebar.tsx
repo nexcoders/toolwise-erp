@@ -1,11 +1,13 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import { BarChart3, ClipboardList, Package, ShoppingCart, Layers, Settings, Wrench, Users, FileText, UserPlus, Building2, BookOpen, BarChart } from "lucide-react";
+import { BarChart3, ClipboardList, Package, ShoppingCart, Layers, Settings, Wrench, Users, FileText, UserPlus, Building2, BookOpen, BarChart, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+
 const AppSidebar: React.FC = () => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  
   return <Sidebar>
       <SidebarHeader className="flex items-center justify-center py-4">
         <div className="flex items-center gap-2">
@@ -64,6 +66,22 @@ const AppSidebar: React.FC = () => {
                   <Link to="/crm/relatorios">
                     <BarChart className="h-5 w-5 mr-2" />
                     <span>Relatórios</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/crm/rd-station") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/crm/rd-station">
+                    <Zap className="h-5 w-5 mr-2" />
+                    <span>RD Station</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/crm/rd-station-tutorial") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/crm/rd-station-tutorial">
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    <span>Tutorial RD Station</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
