@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Table,
@@ -94,7 +93,7 @@ export interface CrudPageProps {
   searchPlaceholder?: string;
   customFilters?: React.ReactNode;
   customActions?: (item: any) => React.ReactNode;
-  customFieldRenderers?: Record<string, (field: any, value: any, onChange: (value: any) => void) => React.ReactNode>;
+  customFieldRenderers?: Record<string, (field: any, value: any, onChange: (value: any) => void, formValues: any) => React.ReactNode>;
 }
 
 const CrudPage: React.FC<CrudPageProps> = ({

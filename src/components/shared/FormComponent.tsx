@@ -42,7 +42,7 @@ interface FormComponentProps {
   submitLabel?: string;
   cancelLabel?: string;
   onCancel?: () => void;
-  customFieldRenderers?: Record<string, (field: any, value: any, onChange: (value: any) => void) => React.ReactNode>;
+  customFieldRenderers?: Record<string, (field: any, value: any, onChange: (value: any) => void, formValues: any) => React.ReactNode>;
 }
 
 const FormComponent: React.FC<FormComponentProps> = ({
@@ -115,7 +115,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                     <FormLabel>{field.label}</FormLabel>
                     <FormControl>
                       {customFieldRenderers[field.type] ? (
-                        customFieldRenderers[field.type](field, formField.value, formField.onChange)
+                        customFieldRenderers[field.type](field, formField.value, formField.onChange, form.getValues())
                       ) : field.type === "textarea" ? (
                         <Textarea
                           placeholder={field.placeholder}
