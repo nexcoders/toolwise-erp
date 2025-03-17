@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import CrudPage from "@/components/shared/CrudPage";
 import { ShoppingCart } from "lucide-react";
 import FornecedorView from "./components/FornecedorView";
@@ -8,6 +8,8 @@ import { fornecedoresFormFields } from "./config/fornecedores-form-fields";
 import { fornecedoresColumns } from "./config/fornecedores-columns";
 
 const Fornecedores: React.FC = () => {
+  const [selectedFornecedor, setSelectedFornecedor] = useState<any>(null);
+
   // Custom actions for cotação
   const customActions = (item: any) => (
     <div
@@ -48,6 +50,16 @@ const Fornecedores: React.FC = () => {
     // In a real app, we would call an API here
   };
 
+  // Handler for viewing a fornecedor
+  const handleViewItem = (item: any) => {
+    setSelectedFornecedor(item);
+  };
+
+  // Handler for closing the view
+  const handleCloseView = () => {
+    setSelectedFornecedor(null);
+  };
+
   return (
     <CrudPage
       title="Fornecedores"
@@ -59,7 +71,13 @@ const Fornecedores: React.FC = () => {
       onCreateItem={handleCreateItem}
       onUpdateItem={handleUpdateItem}
       onDeleteItem={handleDeleteItem}
-      viewComponent={<FornecedorView data={{}} onClose={() => {}} />}
+      onViewItem={handleViewItem}
+      viewComponent={
+        <FornecedorView 
+          data={selectedFornecedor || {}} 
+          onClose={handleCloseView}
+        />
+      }
       customActions={customActions}
     />
   );

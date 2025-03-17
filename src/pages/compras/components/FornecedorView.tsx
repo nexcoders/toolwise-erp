@@ -9,8 +9,17 @@ interface FornecedorViewProps {
 }
 
 const FornecedorView: React.FC<FornecedorViewProps> = ({ data, onClose }) => {
+  // Prevent event propagation
+  const handleContentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
+  if (!data || !data.id) {
+    return null;
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" onClick={handleContentClick}>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <p className="text-sm text-muted-foreground">Código</p>
