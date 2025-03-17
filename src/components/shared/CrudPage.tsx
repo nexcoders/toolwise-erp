@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Eye,
   FileEdit,
-  MoreVertical,
+  MoreVertical, 
   PlusCircle, 
   Search, 
   Trash2
