@@ -1,7 +1,8 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import { BarChart3, ClipboardList, Package, ShoppingCart, Layers, Settings, Wrench, Users, FileText, UserPlus, Building2, BookOpen, BarChart, Zap } from "lucide-react";
+import { BarChart3, ClipboardList, Package, ShoppingCart, Layers, Settings, Wrench, Users, FileText, UserPlus, Building2, BookOpen, BarChart, Zap, CalendarCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AppSidebar: React.FC = () => {
@@ -93,6 +94,14 @@ const AppSidebar: React.FC = () => {
           <SidebarGroupLabel>Produção</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/producao/planejamento") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/producao/planejamento">
+                    <CalendarCheck className="h-5 w-5 mr-2" />
+                    <span>Planejamento de Produção</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className={cn(isActive("/producao/ordens") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
                   <Link to="/producao/ordens">

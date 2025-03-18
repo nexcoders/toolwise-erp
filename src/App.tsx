@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import OrdemProducao from "./pages/producao/OrdemProducao";
 import ProdutoEstrutura from "./pages/producao/ProdutoEstrutura";
+import PlanejamentoProducao from "./pages/producao/PlanejamentoProducao";
 import Insumos from "./pages/estoque/Insumos";
 import Movimentacoes from "./pages/estoque/Movimentacoes";
 import Cotacoes from "./pages/compras/Cotacoes";
@@ -35,6 +36,7 @@ const App = () => (
         <Routes>
           <Route element={<AppLayout />}>
             <Route path="/" element={<Index />} />
+            <Route path="/producao/planejamento" element={<PlanejamentoProducao />} />
             <Route path="/producao/ordens" element={<OrdemProducao />} />
             <Route path="/producao/produtos" element={<ProdutoEstrutura />} />
             <Route path="/estoque/insumos" element={<Insumos />} />
