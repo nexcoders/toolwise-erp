@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -26,6 +25,19 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { 
+  Form, 
+  FormControl, 
+  FormDescription, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import {
   Building2,
   Save,
@@ -34,9 +46,39 @@ import {
   Lock,
   Bell,
   Shield,
+  Cog,
 } from "lucide-react";
 
+const productionParamsSchema = z.object({
+  horasTrabalhoDia: z.coerce.number().min(1).max(24),
+  diasTrabalhoSemana: z.coerce.number().min(1).max(7),
+  margemSeguranca: z.coerce.number().min(0).max(100),
+  prioridadePedidoExportacao: z.boolean(),
+  alertaEstoqueBaixo: z.coerce.number().min(0),
+  tempoPreparacaoMin: z.coerce.number().min(0),
+  observacoesProducao: z.string().optional(),
+});
+
+type ProductionParamsFormValues = z.infer<typeof productionParamsSchema>;
+
 const Configuracoes: React.FC = () => {
+  const productionForm = useForm<ProductionParamsFormValues>({
+    resolver: zodResolver(productionParamsSchema),
+    defaultValues: {
+      horasTrabalhoDia: 8,
+      diasTrabalhoSemana: 5,
+      margemSeguranca: 10,
+      prioridadePedidoExportacao: true,
+      alertaEstoqueBaixo: 20,
+      tempoPreparacaoMin: 30,
+      observacoesProducao: "",
+    },
+  });
+
+  const onSubmitProductionParams = (data: ProductionParamsFormValues) => {
+    console.log("Parâmetros de produção salvos:", data);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -60,6 +102,10 @@ const Configuracoes: React.FC = () => {
           <TabsTrigger value="seguranca" className="flex items-center gap-1">
             <Shield className="h-4 w-4" />
             <span>Segurança</span>
+          </TabsTrigger>
+          <TabsTrigger value="producao" className="flex items-center gap-1">
+            <Cog className="h-4 w-4" />
+            <span>Produção</span>
           </TabsTrigger>
         </TabsList>
 
@@ -422,6 +468,180 @@ const Configuracoes: React.FC = () => {
                   </Button>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="producao" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Parâmetros de Produção</CardTitle>
+              <CardDescription>
+                Configure os parâmetros que afetam o planejamento e execução da produção.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...productionForm}>
+                <form onSubmit={productionForm.handleSubmit(onSubmitProductionParams)} className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Calendário de Trabalho</h3>
+                      
+                      <FormField
+                        control={productionForm.control}
+                        name="horasTrabalhoDia"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Horas de Trabalho por Dia</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Quantidade de horas produtivas em um dia normal
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={productionForm.control}
+                        name="diasTrabalhoSemana"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Dias de Trabalho por Semana</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Quantidade de dias produtivos em uma semana
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Planejamento</h3>
+                      
+                      <FormField
+                        control={productionForm.control}
+                        name="margemSeguranca"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Margem de Segurança (%)</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Percentual adicional no tempo estimado para imprevistos
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={productionForm.control}
+                        name="tempoPreparacaoMin"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Tempo de Preparação (min)</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Tempo padrão para setup de máquinas entre operações
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Alertas e Prioridades</h3>
+                      
+                      <FormField
+                        control={productionForm.control}
+                        name="alertaEstoqueBaixo"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Alerta de Estoque Baixo (%)</FormLabel>
+                            <FormControl>
+                              <Input type="number" {...field} />
+                            </FormControl>
+                            <FormDescription>
+                              Percentual mínimo para alertar sobre estoque baixo
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={productionForm.control}
+                        name="prioridadePedidoExportacao"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">
+                                Prioridade para Pedidos de Exportação
+                              </FormLabel>
+                              <FormDescription>
+                                Priorizar pedidos de exportação no planejamento de produção
+                              </FormDescription>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Observações</h3>
+                      
+                      <FormField
+                        control={productionForm.control}
+                        name="observacoesProducao"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Observações Gerais</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Insira observações sobre a produção" 
+                                className="min-h-[120px]" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Informações adicionais para a equipe de produção
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <Button type="submit" className="flex items-center gap-1">
+                      <Save className="h-4 w-4" />
+                      <span>Salvar Parâmetros de Produção</span>
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </CardContent>
           </Card>
         </TabsContent>
