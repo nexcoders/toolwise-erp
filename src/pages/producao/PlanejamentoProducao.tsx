@@ -1,12 +1,114 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarCheck, BarChart3, Calendar, Clock, ChevronRight } from "lucide-react";
+import { CalendarCheck, BarChart3, Calendar, Clock, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { format, addBusinessDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import {
+  ReactFlow,
+  MiniMap,
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Handle,
+  Position,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+
+// Mock data for production orders
+const mockProductions = [
+  { id: "OP-2023-089", produto: "Molde Injeção Plástica", cliente: "Plásticos Modernos", prioridade: "Alta", tempoProducaoHoras: 120 },
+  { id: "OP-2023-092", produto: "Ferramenta de Corte", cliente: "MetalCorp", prioridade: "Média", tempoProducaoHoras: 45 },
+  { id: "OP-2023-094", produto: "Matriz Estampagem", cliente: "AutoPeças SA", prioridade: "Baixa", tempoProducaoHoras: 32 },
+];
+
+// Calcular dias de produção (8 horas por dia útil)
+const calcularDiasProducao = (horas: number) => {
+  return Math.ceil(horas / 8);
+};
+
+// Node type for production orders
+const OrderNode = ({ data }: { data: any }) => {
+  return (
+    <div className="bg-white p-2 rounded-md border border-gray-200 shadow-sm w-[200px]">
+      <div className="font-medium text-sm">{data.id}</div>
+      <div className="text-xs">{data.produto}</div>
+      <div className="text-xs text-muted-foreground">{data.cliente}</div>
+      <div className="flex justify-between items-center mt-1">
+        <div className="text-xs">
+          <span className="font-medium">{data.tempoProducaoHoras}h</span> ({calcularDiasProducao(data.tempoProducaoHoras)} dias)
+        </div>
+        <Badge variant={data.prioridade === "Alta" ? "destructive" : data.prioridade === "Média" ? "default" : "outline"}>
+          {data.prioridade}
+        </Badge>
+      </div>
+      <Handle type="target" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
+    </div>
+  );
+};
+
+const nodeTypes = {
+  orderNode: OrderNode,
+};
 
 const PlanejamentoProducao: React.FC = () => {
+  // Initial nodes for React Flow
+  const initialNodes = mockProductions.map((ordem, index) => ({
+    id: ordem.id,
+    type: "orderNode",
+    data: { ...ordem },
+    position: { x: 50, y: 100 + index * 120 },
+  }));
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  
+  const onConnect = (params: any) => setEdges((eds) => addEdge(params, eds));
+  
+  const onDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+  };
+
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+
+    const type = event.dataTransfer.getData("application/reactflow");
+    const ordem = JSON.parse(event.dataTransfer.getData("ordem"));
+
+    // Check if the dropped element is valid
+    if (typeof type === "undefined" || !type) {
+      return;
+    }
+
+    const position = { 
+      x: event.clientX - 100, 
+      y: event.clientY - 40 
+    };
+
+    // Create a new node for the dropped order
+    const newNode = {
+      id: `${ordem.id}-${Math.floor(Math.random() * 10000)}`,
+      type: "orderNode",
+      position,
+      data: { ...ordem },
+    };
+
+    setNodes((nds) => nds.concat(newNode));
+  };
+
+  const onDragStart = (event: React.DragEvent<HTMLDivElement>, ordem: any) => {
+    event.dataTransfer.setData("application/reactflow", "orderNode");
+    event.dataTransfer.setData("ordem", JSON.stringify(ordem));
+    event.dataTransfer.effectAllowed = "move";
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -41,20 +143,24 @@ const PlanejamentoProducao: React.FC = () => {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-xl">Ordens Pendentes</CardTitle>
-                <CardDescription>Ordens aguardando planejamento</CardDescription>
+                <CardDescription>Arraste para o calendário para planejar</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[
-                    { id: "OP-2023-089", produto: "Molde Injeção Plástica", cliente: "Plásticos Modernos", prioridade: "Alta" },
-                    { id: "OP-2023-092", produto: "Ferramenta de Corte", cliente: "MetalCorp", prioridade: "Média" },
-                    { id: "OP-2023-094", produto: "Matriz Estampagem", cliente: "AutoPeças SA", prioridade: "Baixa" },
-                  ].map((ordem) => (
-                    <div key={ordem.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/40 cursor-pointer transition-colors">
+                  {mockProductions.map((ordem) => (
+                    <div
+                      key={ordem.id}
+                      className="flex items-center justify-between p-3 border rounded-md hover:bg-accent/40 cursor-move transition-colors"
+                      draggable
+                      onDragStart={(e) => onDragStart(e, ordem)}
+                    >
                       <div>
                         <div className="font-medium">{ordem.id}</div>
                         <div className="text-sm text-muted-foreground">{ordem.produto}</div>
                         <div className="text-xs text-muted-foreground">{ordem.cliente}</div>
+                        <div className="text-xs mt-1">
+                          <span className="font-medium">{ordem.tempoProducaoHoras}h</span> ({calcularDiasProducao(ordem.tempoProducaoHoras)} dias)
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant={ordem.prioridade === "Alta" ? "destructive" : ordem.prioridade === "Média" ? "default" : "outline"}>
@@ -71,11 +177,22 @@ const PlanejamentoProducao: React.FC = () => {
             <Card className="md:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xl">Calendário de Produção</CardTitle>
-                <CardDescription>Visualize a programação dos próximos dias</CardDescription>
+                <CardDescription>Arraste e solte as ordens para agendar</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-[400px] flex items-center justify-center border-2 border-dashed rounded-md">
-                  <p className="text-muted-foreground">Calendário de Produção será exibido aqui</p>
+                <div className="h-[400px] border rounded-md" onDragOver={onDragOver} onDrop={onDrop}>
+                  <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    onNodesChange={onNodesChange}
+                    onEdgesChange={onEdgesChange}
+                    onConnect={onConnect}
+                    nodeTypes={nodeTypes}
+                    fitView
+                  >
+                    <Background />
+                    <Controls />
+                  </ReactFlow>
                 </div>
               </CardContent>
             </Card>
