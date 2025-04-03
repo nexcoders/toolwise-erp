@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
-import { BarChart3, ClipboardList, Package, ShoppingCart, Layers, Settings, Wrench, Users, FileText, UserPlus, Building2, BarChart, CalendarCheck } from "lucide-react";
+import { BarChart3, ClipboardList, Package, ShoppingCart, Layers, Settings, Wrench, Users, FileText, UserPlus, Building2, BarChart, CalendarCheck, DollarSign, TrendingUp, ArrowDownRight, PieChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AppSidebar: React.FC = () => {
@@ -147,6 +147,38 @@ const AppSidebar: React.FC = () => {
                   <Link to="/compras/fornecedores">
                     <Users className="h-5 w-5 mr-2" />
                     <span>Fornecedores</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Financeiro</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/financeiro/receitas") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/financeiro/receitas">
+                    <TrendingUp className="h-5 w-5 mr-2" />
+                    <span>Receitas</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/financeiro/despesas") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/financeiro/despesas">
+                    <ArrowDownRight className="h-5 w-5 mr-2" />
+                    <span>Despesas</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className={cn(isActive("/financeiro/relatorios") && "bg-sidebar-accent text-sidebar-accent-foreground")}>
+                  <Link to="/financeiro/relatorios">
+                    <PieChart className="h-5 w-5 mr-2" />
+                    <span>Relatórios</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

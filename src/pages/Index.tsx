@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Layers, Package, ClipboardList, ShoppingCart } from "lucide-react";
+import { BarChart3, Layers, Package, ClipboardList, ShoppingCart, DollarSign, TrendingUp, ArrowDownRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   return (
@@ -52,6 +53,65 @@ const Index = () => {
           <CardContent>
             <div className="text-2xl font-bold">8</div>
             <p className="text-xs text-muted-foreground">Aguardando análise</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Saldo Financeiro</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-500">R$ 56.423,20</div>
+            <div className="mt-2 flex justify-between">
+              <p className="text-xs text-muted-foreground">
+                <span className="mr-1">↑</span> 
+                Receitas: <span className="font-medium">R$ 94.800,00</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                <span className="mr-1">↓</span>
+                Despesas: <span className="font-medium">R$ 38.376,80</span>
+              </p>
+            </div>
+            <div className="mt-4">
+              <Link to="/financeiro/relatorios" className="text-xs text-blue-500 hover:underline">
+                Ver relatórios completos →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Receitas Pendentes</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-500">R$ 31.800,00</div>
+            <p className="text-xs text-muted-foreground">4 receitas a receber</p>
+            <div className="mt-4">
+              <Link to="/financeiro/receitas" className="text-xs text-blue-500 hover:underline">
+                Gerenciar receitas →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Despesas Pendentes</CardTitle>
+            <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-500">R$ 13.200,00</div>
+            <p className="text-xs text-muted-foreground">4 despesas a pagar</p>
+            <div className="mt-4">
+              <Link to="/financeiro/despesas" className="text-xs text-blue-500 hover:underline">
+                Gerenciar despesas →
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

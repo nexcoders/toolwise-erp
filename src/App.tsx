@@ -19,6 +19,9 @@ import Clientes from "./pages/crm/Clientes";
 import Oportunidades from "./pages/crm/Oportunidades";
 import Empresas from "./pages/crm/Empresas";
 import Relatorios from "./pages/crm/Relatorios";
+import Receitas from "./pages/financeiro/Receitas";
+import Despesas from "./pages/financeiro/Despesas";
+import RelatoriosFinanceiros from "./pages/financeiro/Relatorios";
 
 // Change the window title
 document.title = "Nex G.E";
@@ -45,6 +48,9 @@ const App = () => (
             <Route path="/crm/oportunidades" element={<Oportunidades />} />
             <Route path="/crm/empresas" element={<Empresas />} />
             <Route path="/crm/relatorios" element={<Relatorios />} />
+            <Route path="/financeiro/receitas" element={<Receitas />} />
+            <Route path="/financeiro/despesas" element={<Despesas />} />
+            <Route path="/financeiro/relatorios" element={<RelatoriosFinanceiros />} />
             <Route path="/configuracoes" element={<Configuracoes />} />
           </Route>
           <Route path="*" element={<NotFound />} />
